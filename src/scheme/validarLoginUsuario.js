@@ -12,9 +12,9 @@ const validacaoLoginUsuario = Joi.object({
     "any.required": "O campo email é obrigatório para login com email!",
     "any.forbidden": "O campo email não deve ser fornecido para login com telefone!",
   }),
-  profile_type: Joi.string().required().valid('C', 'S').messages({
+  profile_type_id: Joi.string().required().valid('Customer', 'Supplier').messages({
     "string.empty": "O campo profile_type é obrigatório!",
-    "any.only": "O profile_type deve ser 'C' ou 'S'!",
+    "any.only": "O profile_type deve ser 'Customer' ou 'Supplier'!",
     "any.required": "O campo profile_type é obrigatório!",
   }),
   telefone: Joi.string().pattern(/^[1-9][0-9]\d{8,9}$/).when('tipo', { is: 'telefone', then: Joi.required(), otherwise: Joi.forbidden() }).messages({

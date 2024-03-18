@@ -1,5 +1,5 @@
 const knex = require("../config/conexao");
-const { jwtPassword } = require("../config/security/senha");
+const { jwtPassword } = require("../config/security/jwtPassword");
 const jwt = require("jsonwebtoken");
 
 const validarAutenticacao = async (req, res, next) => {
@@ -11,7 +11,7 @@ const validarAutenticacao = async (req, res, next) => {
 
   try {
     const { id: usuarioLogadoId } = jwt.verify(token, jwtPassword);
-    const usuarioLogado = await knex("usuarios").where("id", usuarioLogadoId);
+    const usuarioLogado = await knex("users").where("id", usuarioLogadoId);
 
     if (usuarioLogado.length === 0) {
       return res.status(401).json({ mensagem: "Usuário sem permissão" });

@@ -30,9 +30,9 @@ const validacaoCadastrarUsuario = Joi.object({
         "string.base": "Formato de nome inválido!",
         "any.required": "O campo nome é obrigatório!",
     }),
-    profile_type_id: Joi.string().required().messages({
-        "string.empty": "O campo profile_type é obrigatório!",
-        "any.required": "O campo profile_type é obrigatório!",
+    profile_type_id: Joi.string().required().valid('7f00b14a-ef42-4558-988b-cd9b415ca139', '86a057cb-a888-4958-aa7a-ce5c99b72fb2', 'c5e6af0c-3a96-4d8b-ad0f-1374f398523d').messages({
+        "string.empty": "O campo profile_type_id é obrigatório!",
+        "any.required": "O campo profile_type_id é obrigatório!",
     }),
     email: Joi.string().email().required().messages({
         "string.email": "Email inválido!",
@@ -49,9 +49,9 @@ const validacaoCadastrarUsuario = Joi.object({
         "any.required": "O campo senha é obrigatório!",
     }),
     document_type_id: Joi.string().required().valid('83555b9e-4064-44d1-b449-fc49cc067863', 'bed0fa7c-3c8b-4288-904a-ef8456d2a9e3').messages({
-      "string.empty": "O campo profile_type é obrigatório!",
-      "any.only": "O profile_type deve ser 'Customer' ou 'Supplier'!",
-      "any.required": "O campo profile_type é obrigatório!",
+        "string.empty": "O campo document_type_id é obrigatório!",
+        "any.only": "O document_type_id deve ser '83555b9e-4064-44d1-b449-fc49cc067863' ou 'bed0fa7c-3c8b-4288-904a-ef8456d2a9e3'!",
+        "any.required": "O campo document_type é obrigatório!",
     }),
     document_number: Joi.string().custom((value, helpers) => {
         if (!isValidCPF(value)) {

@@ -64,8 +64,11 @@ const cadastrarUsuario = async (req, res) => {
     });
 
     await knex("customers").insert({
+      user_id: userId.id,
       full_name: nome,
       active: true,
+      document_type_id: docType.id,
+      document_number,
       created_at: new Date(),
       updated_at: new Date()
     })
@@ -80,11 +83,11 @@ const cadastrarUsuario = async (req, res) => {
 
 
 const loginUsuarioEmail = async (req, res) => {
-  const { tipo, profile_type, email, telefone, senha } = req.body;
+  const { tipo, profile_type_id, email, telefone, senha } = req.body;
 
   if (tipo === 'email') {
     try {
-      const processandoLogin = await knex("users").where({ email, profile_type });
+      const processandoLogin = await knex("users").where({ email, profile_type_id });
 
       if (processandoLogin.length === 0 || !(await bcrypt.compare(senha, processandoLogin[0].senha))) {
         return res.status(400).json({ mensagem: "Email ou senha incorretos" });
@@ -128,9 +131,17 @@ const listarUsuarios = async (req, res) => {
 
 const atualizarUsuario = async (req, res) => {
   const { id } = req.params;
-  const { nome, email, senha } = req.body;
+  const { nome, email, senhaAntiga, senhaNova } = req.body;
   try {
-    await knex("usuarios").where({ id }).update({ nome, email, senha });
+
+    const processingUpdate = await knex("users").where({ id });
+
+    if (processingUpdate.length === 0 || !(await bcrypt.compare(senhaAntiga, processingUpdate[0].password))) {
+      return res.status(400).json({ mensagem: "Senha incorreta" });
+    }
+    const senhaCriptografada = await bcrypt.hash(senhaNova, 10);
+
+    await knex("users").where({ id }).update({ nome, email, password: senhaCriptografada });
     res.status(200).json({ mensagem: "Usuário atualizado com sucesso" });
   } catch (error) {
     res.status(500).json({ mensagem: "Erro ao atualizar usuário" });
@@ -139,8 +150,15 @@ const atualizarUsuario = async (req, res) => {
 
 const deletarUsuario = async (req, res) => {
   const { id } = req.params;
+  const { senha } = req.body
   try {
-    await knex("usuarios").where({ id }).del();
+
+    const processingDelete = await knex("users").where({ id });
+
+    if (processingDelete.length === 0 || !(await bcrypt.compare(senha, processingDelete[0].password))) {
+      return res.status(400).json({ mensagem: "Senha incorreta" });
+    }
+    await knex("users").where({ id }).update({ active: false});
     res.status(200).json({ mensagem: "Usuário deletado com sucesso" });
   } catch (error) {
     res.status(500).json({ mensagem: "Erro ao deletar usuário" });
