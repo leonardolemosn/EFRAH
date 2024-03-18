@@ -5,60 +5,86 @@ const { jwtPassword } = require("../config/security/jwtPassword");
 
 
 const cadastrarUsuario = async (req, res) => {
-  const { tipo, profile_type, nome, email, telefone, senha } = req.body;
-  if (tipo === 'email') {
-    try {
-      const usuario = await knex("usuarios").where({ email, profile_type });
+  const { profile_type_id, nome, email, telefone, senha, document_number, document_type_id } = req.body;
+  try {
+    const usuarioExistente = await knex("users_documents").where({ document_number }).first();
 
-      if (usuario.length > 0) {
-        return res.status(400).json({ mensagem: "Email informado já cadastrado" })
-      }
-      const senhaCriptografada = await bcrypt.hash(senha, 10);
-      const usuarioCompleto = {
-        nome,
-        profile_type,
-        email,
-        senha: senhaCriptografada,
-      };
-      const publicarUsuario = await knex("usuarios").insert(usuarioCompleto);
-
-      return res
-        .status(200)
-        .json({ mensagem: "Usuário inserido com sucesso" })
-    } catch (error) {
-      return res.status(500).json({ mensagem: "erro no server" });
+    if (usuarioExistente) {
+      return res.status(400).json({ mensagem: "Usuário já cadastrado" });
     }
-  } else if (tipo === 'telefone') {
-    try {
-      const usuario = await knex("usuarios").where({ telefone, profile_type });
 
-      if (usuario.length > 0) {
-        return res.status(400).json({ mensagem: "Telefone informado já cadastrado" })
-      }
-      const senhaCriptografada = await bcrypt.hash(senha, 10);
-      const usuarioCompleto = {
-        nome,
-        profile_type,
-        telefone,
-        senha: senhaCriptografada,
-      };
-      const publicarUsuario = await knex("usuarios").insert(usuarioCompleto);
+    const validarTelefone = await knex("users").where({ phone_number: telefone }).first();
 
-      return res
-        .status(200)
-        .json({ mensagem: "Usuário inserido com sucesso" })
-    } catch (error) {
-      return res.status(500).json({ mensagem: "erro no server" });
+    if (validarTelefone) {
+      return res.status(400).json({ mensagem: "Telefone informado já cadastrado" });
     }
+
+    const validarEmail = await knex("users").where({ email }).first();
+
+    if (validarEmail) {
+      return res.status(400).json({ mensagem: "Email informado já cadastrado" });
+    }
+
+    const profileType = await knex("profile_type").where({ id: profile_type_id }).first();
+
+    if (!profileType) {
+      return res.status(404).json({ mensagem: "Tipo de perfil não encontrado" });
+    }
+
+    const senhaCriptografada = await bcrypt.hash(senha, 10);
+
+    const [userId] = await knex("users").insert({
+
+      profile_type_id,
+      email,
+      phone_number: telefone,
+      password: senhaCriptografada,
+      active: true,
+      created_at: new Date(),
+      updated_at: new Date()
+    }).returning('id');
+
+    if (!userId) {
+      return res.status(400).json({ mensagem: "Erro ao criar usuário" });
+    }
+
+    const docType = await knex("document_types").where({ id: document_type_id }).first();
+
+    if (!docType) {
+      return res.status(404).json({ mensagem: "Tipo de documento não encontrado" });
+    }
+
+    await knex("users_documents").insert({
+      user_id: userId.id,  // Assumindo que 'userId.id' está correto
+      document_type_id: docType.id,
+      document_number,
+      active: true,  // Definindo o campo 'active'
+      created_at: new Date(),
+      updated_at: new Date()
+    });
+
+    await knex("customers").insert({
+      full_name: nome,
+      active: true,
+      created_at: new Date(),
+      updated_at: new Date()
+    })
+
+
+    return res.status(200).json({ mensagem: "Usuário e documentos inseridos com sucesso" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ mensagem: "Server error", error: error.message });
   }
 };
+
 
 const loginUsuarioEmail = async (req, res) => {
   const { tipo, profile_type, email, telefone, senha } = req.body;
 
   if (tipo === 'email') {
     try {
-      const processandoLogin = await knex("usuarios").where({ email, profile_type });
+      const processandoLogin = await knex("users").where({ email, profile_type });
 
       if (processandoLogin.length === 0 || !(await bcrypt.compare(senha, processandoLogin[0].senha))) {
         return res.status(400).json({ mensagem: "Email ou senha incorretos" });
@@ -74,7 +100,7 @@ const loginUsuarioEmail = async (req, res) => {
     }
   } else if (tipo === 'telefone') {
     try {
-      const processandoLogin = await knex("usuarios").where({ telefone, profile_type });
+      const processandoLogin = await knex("users").where({ telefone, profile_type });
 
       if (processandoLogin.length === 0 || !(await bcrypt.compare(senha, processandoLogin[0].senha))) {
         return res.status(400).json({ mensagem: "Telefone ou senha incorretos" });
