@@ -55,10 +55,10 @@ const cadastrarUsuario = async (req, res) => {
     }
 
     await knex("users_documents").insert({
-      user_id: userId.id,  // Assumindo que 'userId.id' está correto
+      user_id: userId.id,
       document_type_id: docType.id,
       document_number,
-      active: true,  // Definindo o campo 'active'
+      active: true,
       created_at: new Date(),
       updated_at: new Date()
     });
@@ -82,7 +82,7 @@ const cadastrarUsuario = async (req, res) => {
 };
 
 
-const loginUsuarioEmail = async (req, res) => {
+const loginUsuarioEmail = async (req, res) => { 
   const { tipo, profile_type_id, email, telefone, senha } = req.body;
 
   if (tipo === 'email') {
