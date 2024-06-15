@@ -35,7 +35,7 @@ const cadastrarUsuario = async (req, res) => {
 
     const [userId] = await knex("users").insert({
 
-      profile_type_id,
+      profile_type_id,  
       email,
       phone_number: telefone,
       password: senhaCriptografada,

@@ -2,7 +2,7 @@ const knex = require("../config/conexao");
 const bcrypt = require('bcrypt');
 
 const registerSupplier = async (req, res) => {
-    const { profile_type_id, razãoSocial, nomeFantasia, email, telefone, senha, CNPJ, CRM, RQE, dataDeAbertura, country, birth_city, document_type_id } = req.body;
+    const { profile_type_id, razaoSocial, nomeFantasia, email, telefone, senha, CNPJ, CRM, RQE, country, birth_city } = req.body;
     if (profile_type_id === '86a057cb-a888-4958-aa7a-ce5c99b72fb2') {
         try {
             const usuario = await knex("users_documents").where({ document_number: CRM });
@@ -71,7 +71,7 @@ const registerSupplier = async (req, res) => {
 
             await knex("suppliers").insert({
                 user_id: supplierId.id,
-                legal_name: razãoSocial,
+                legal_name:razaoSocial,
                 free_name: nomeFantasia,
                 nationality: validarPais.id,
                 birth_city: validarCidade.id,
@@ -145,7 +145,7 @@ const registerSupplier = async (req, res) => {
 
             await knex("suppliers").insert({
                 user_id: supplierId.id,
-                legal_name: razãoSocial,
+                legal_name: razaoSocial,
                 free_name: nomeFantasia,
                 nationality: validarPais.id,
                 birth_city: validarCidade.id,

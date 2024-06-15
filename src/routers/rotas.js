@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const rotas = express();
 const usuario = require("../controllers/user")
 const validarBodyRequisicao = require("../middlewares/validarBodyRequisicao");
@@ -10,16 +11,17 @@ const validacaoCadastrarCustomer = require("../scheme/validateRegisterUpdateCust
 const validacaoUpdateCustomer = require("../scheme/validateRegisterUpdateCustomer")
 const updateCustomer = require("../controllers/customer");
 
+// Aplicar o CORS a todas as rotas
+rotas.use(cors());
 
 rotas.post("/register/user", validarBodyRequisicao(validacaoCadastrarUsuario), usuario.cadastrarUsuario);
 rotas.post("/register/user/supplier");
-rotas.post("/create/user/customerProfile", validarAutenticacao, validarBodyRequisicao(validacaoCadastrarCustomer),registerCustomer.registerCustomer);
-rotas.put("update/customer", validarAutenticacao, validarBodyRequisicao(validacaoUpdateCustomer), updateCustomer.updateCustomer);
-rotas.get("/profile", validarAutenticacao)
+rotas.post("/create/user/customerProfile", validarAutenticacao, validarBodyRequisicao(validacaoCadastrarCustomer), registerCustomer.registerCustomer);
+rotas.put("/update/customer", validarAutenticacao, validarBodyRequisicao(validacaoUpdateCustomer), updateCustomer.updateCustomer);
+rotas.get("/profile", validarAutenticacao);
 rotas.post("/login", validarBodyRequisicao(validacaoLoginUsuario), usuario.loginUsuarioEmail);
 rotas.get("/usuario", usuario.listarUsuarios);
 rotas.put("/usuario/:id", validarAutenticacao, usuario.atualizarUsuario);
 rotas.delete("/usuario/:id", usuario.deletarUsuario);
-  
 
 module.exports = rotas;
